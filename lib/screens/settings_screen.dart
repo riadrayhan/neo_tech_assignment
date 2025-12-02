@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/hive_service.dart';
 import '../services/api_service.dart';
+import '../utils/app_restart.dart';
 
 /// Settings screen for app configuration
 ///
@@ -145,25 +146,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
     };
   }
 
-  /// Toggle theme and show restart dialog
-  void _toggleTheme(bool value) {
-    _hiveService.setDarkMode(value);
+  /// Toggle theme and rebuild app
+  void _toggleTheme(bool value) async {
+    await _hiveService.setDarkMode(value);
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Theme Changed'),
-        content: const Text(
-          'Please restart the app to apply the new theme.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
+    // Restart the app to apply theme
+    if (mounted) {
+      AppRestartWidget.restartApp(context);
+
+      // Show confirmation
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                value ? 'Dark mode enabled' : 'Light mode enabled',
+              ),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      });
+    }
   }
 
   @override

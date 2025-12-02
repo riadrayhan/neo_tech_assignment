@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'services/hive_service.dart';
 import 'utils/theme_helper.dart';
+import 'utils/app_restart.dart';
 
 /// Main entry point of the application
 ///
@@ -15,19 +16,29 @@ void main() async {
   // Initialize Hive database for offline storage
   await HiveService.initialize();
 
-  // Run the app
-  runApp(const ChemicalInventoryApp());
+  // Run the app with restart wrapper
+  runApp(
+    const AppRestartWidget(
+      child: ChemicalInventoryApp(),
+    ),
+  );
 }
 
 /// Root widget of the application
-class ChemicalInventoryApp extends StatelessWidget {
+class ChemicalInventoryApp extends StatefulWidget {
   const ChemicalInventoryApp({super.key});
+
+  @override
+  State<ChemicalInventoryApp> createState() => _ChemicalInventoryAppState();
+}
+
+class _ChemicalInventoryAppState extends State<ChemicalInventoryApp> {
+  final HiveService _hiveService = HiveService();
 
   @override
   Widget build(BuildContext context) {
     // Get dark mode preference from Hive
-    final hiveService = HiveService();
-    final isDarkMode = hiveService.getDarkMode();
+    final isDarkMode = _hiveService.getDarkMode();
 
     return MaterialApp(
       title: 'Chemical Inventory',
